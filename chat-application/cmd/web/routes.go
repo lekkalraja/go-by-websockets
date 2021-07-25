@@ -8,5 +8,6 @@ import (
 func routes() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", handlers.Home)
+	r.HandleFunc("/ws", handlers.WsEndpoint)
 	return r
 }
