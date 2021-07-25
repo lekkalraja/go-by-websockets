@@ -9,6 +9,9 @@ import (
 	"github.com/lekkalraja/go-by-websockets/chat-application/models"
 )
 
+var conns = make(map[*websocket.Conn]string)
+var payChan = make(chan models.WsPayload)
+
 var views = jet.NewSet(
 	jet.NewOSFileSystemLoader("./html"),
 	jet.InDevelopmentMode(), // remove in production
@@ -40,10 +43,53 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 		Message: `<em><small>Connected to server</small></em>`,
 	}
 
+	conns[conn] = ""
+
 	err = conn.WriteJSON(response)
 
 	if err != nil {
 		log.Printf("Something went wrong while Wring Ws response : %v", err)
+	}
+	go listenWS(conn)
+}
+
+func listenWS(conn *websocket.Conn) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Something went wrong, Recovering for the error : %v", r)
+		}
+	}()
+	var payload models.WsPayload
+	for {
+		err := conn.ReadJSON(&payload)
+		if err != nil {
+			log.Printf("Something went wrong while Reading Payload: %v", err)
+		} else {
+			payload.Conn = *conn
+			payChan <- payload
+		}
+
+	}
+}
+
+func ListenPayloadChannel() {
+	for {
+		payload := <-payChan
+		brodcast(payload)
+	}
+}
+
+func brodcast(payload models.WsPayload) {
+	for conn := range conns {
+		response := &models.WsResponse{
+			Message: payload.Message,
+		}
+		err := conn.WriteJSON(response)
+		if err != nil {
+			log.Printf("Something went wrong while sending message to : %v", conn.RemoteAddr())
+			conn.Close()
+			delete(conns, conn)
+		}
 	}
 }
 

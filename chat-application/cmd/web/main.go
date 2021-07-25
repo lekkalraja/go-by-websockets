@@ -5,12 +5,16 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/lekkalraja/go-by-websockets/chat-application/handlers"
 )
 
 func main() {
 	mux := routes()
 	port := 8080
 	log.Printf("Starting Web Server on : %d \n", port)
+
+	go handlers.ListenPayloadChannel()
 
 	srv := &http.Server{
 		Handler: mux,
