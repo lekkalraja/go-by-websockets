@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/gorilla/websocket"
@@ -10,7 +11,7 @@ import (
 )
 
 var conns = make(map[*websocket.Conn]string)
-var payChan = make(chan models.WsPayload)
+var payChan = make(chan *models.WsPayload)
 
 var views = jet.NewSet(
 	jet.NewOSFileSystemLoader("./html"),
@@ -42,11 +43,7 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 	response := models.WsResponse{
 		Message: `<em><small>Connected to server</small></em>`,
 	}
-
-	conns[conn] = ""
-
 	err = conn.WriteJSON(response)
-
 	if err != nil {
 		log.Printf("Something went wrong while Wring Ws response : %v", err)
 	}
@@ -59,31 +56,49 @@ func listenWS(conn *websocket.Conn) {
 			log.Printf("Something went wrong, Recovering for the error : %v", r)
 		}
 	}()
-	var payload models.WsPayload
+	var payload *models.WsPayload
 	for {
 		err := conn.ReadJSON(&payload)
 		if err != nil {
 			log.Printf("Something went wrong while Reading Payload: %v", err)
 		} else {
 			payload.Conn = *conn
+			log.Printf("Payload : %v \n", &payload.UserName)
+			conns[conn] = payload.UserName
 			payChan <- payload
 		}
-
 	}
 }
 
 func ListenPayloadChannel() {
 	for {
 		payload := <-payChan
-		brodcast(payload)
+		var response *models.WsResponse
+		switch payload.Action {
+		case "username":
+			users := getUsers()
+			response = &models.WsResponse{
+				ConnectedUsers: users,
+				Action:         "list_users",
+			}
+			brodcast(response)
+		}
 	}
 }
 
-func brodcast(payload models.WsPayload) {
+func getUsers() []string {
+	var users []string
+	for _, user := range conns {
+		users = append(users, user)
+	}
+	sort.Strings(users)
+	log.Printf("Users : %v \n", users)
+	return users
+}
+
+func brodcast(response *models.WsResponse) {
+	log.Printf("Response : %v \n", response)
 	for conn := range conns {
-		response := &models.WsResponse{
-			Message: payload.Message,
-		}
 		err := conn.WriteJSON(response)
 		if err != nil {
 			log.Printf("Something went wrong while sending message to : %v", conn.RemoteAddr())
