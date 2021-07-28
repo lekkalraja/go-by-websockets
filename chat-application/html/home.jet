@@ -24,6 +24,8 @@
             <hr>
         </div>
     </div>
+    <p><a href="https://github.com">Go to github</a></p>
+
     <div class="row">
         <div class="col-md-8">
             <h3>Chat</h3>
@@ -66,11 +68,22 @@
 <script>
     let socket = null;
 
+    window.onbeforeunload = function()  {
+        if (socket != null) {
+            let jsonData = {};
+            jsonData["action"] = "left";
+            socket.send(JSON.stringify(jsonData))
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         socket = new WebSocket("ws://127.0.0.1:8080/ws");
 
         socket.onopen = () => {
             console.log("Successfully connected");
+            let jsonData = {};
+            jsonData["action"] = "open";
+            socket.send(JSON.stringify(jsonData))
         }
 
         socket.onclose = () => {

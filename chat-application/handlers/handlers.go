@@ -44,6 +44,7 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 		Message: `<em><small>Connected to server</small></em>`,
 	}
 	err = conn.WriteJSON(response)
+	conns[conn] = ""
 	if err != nil {
 		log.Printf("Something went wrong while Wring Ws response : %v", err)
 	}
@@ -54,17 +55,15 @@ func listenWS(conn *websocket.Conn) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("Something went wrong, Recovering for the error : %v", r)
+			delete(conns, conn)
 		}
 	}()
 	var payload *models.WsPayload
 	for {
 		err := conn.ReadJSON(&payload)
-		if err != nil {
-			log.Printf("Something went wrong while Reading Payload: %v", err)
-		} else {
+		if err == nil {
 			payload.Conn = *conn
-			log.Printf("Payload : %v \n", &payload.UserName)
-			conns[conn] = payload.UserName
+			log.Printf("Payload : %v \n", payload.Action)
 			payChan <- payload
 		}
 	}
@@ -73,23 +72,30 @@ func listenWS(conn *websocket.Conn) {
 func ListenPayloadChannel() {
 	for {
 		payload := <-payChan
-		var response *models.WsResponse
 		switch payload.Action {
+		case "open":
 		case "username":
-			users := getUsers()
-			response = &models.WsResponse{
-				ConnectedUsers: users,
-				Action:         "list_users",
-			}
-			brodcast(response)
+			conns[&payload.Conn] = payload.UserName
+		case "left":
+			delete(conns, &payload.Conn)
 		}
+		brodcast(getWsResponse("list_users"))
+	}
+}
+
+func getWsResponse(action string) *models.WsResponse {
+	return &models.WsResponse{
+		ConnectedUsers: getUsers(),
+		Action:         action,
 	}
 }
 
 func getUsers() []string {
 	var users []string
 	for _, user := range conns {
-		users = append(users, user)
+		if user != "" {
+			users = append(users, user)
+		}
 	}
 	sort.Strings(users)
 	log.Printf("Users : %v \n", users)
