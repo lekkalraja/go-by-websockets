@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -74,12 +75,22 @@ func ListenPayloadChannel() {
 		payload := <-payChan
 		switch payload.Action {
 		case "open":
+			brodcast(getWsResponse("list_users"))
 		case "username":
 			conns[&payload.Conn] = payload.UserName
+			brodcast(getWsResponse("list_users"))
 		case "left":
 			delete(conns, &payload.Conn)
+			brodcast(getWsResponse("list_users"))
+		case "message":
+			response := &models.WsResponse{
+				ConnectedUsers: getUsers(),
+				Action:         "broadcast",
+				Message:        fmt.Sprintf("<strong>%s</strong> : %s", payload.UserName, payload.Message),
+			}
+			brodcast(response)
 		}
-		brodcast(getWsResponse("list_users"))
+
 	}
 }
 
@@ -104,12 +115,15 @@ func getUsers() []string {
 
 func brodcast(response *models.WsResponse) {
 	log.Printf("Response : %v \n", response)
-	for conn := range conns {
-		err := conn.WriteJSON(response)
-		if err != nil {
-			log.Printf("Something went wrong while sending message to : %v", conn.RemoteAddr())
-			conn.Close()
-			delete(conns, conn)
+	for conn, user := range conns {
+		if user != "" {
+			log.Printf("Sending Response : %v  to %s\n", response, user)
+			err := conn.WriteJSON(response)
+			if err != nil {
+				log.Printf("Something went wrong while sending message to : %v", conn.RemoteAddr())
+				conn.Close()
+				delete(conns, conn)
+			}
 		}
 	}
 }
