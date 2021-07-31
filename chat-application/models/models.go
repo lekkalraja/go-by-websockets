@@ -9,9 +9,12 @@ type WsResponse struct {
 	ConnectedUsers []string `json:"connected_users"`
 }
 
+type WsConnection struct {
+	Conn *websocket.Conn
+}
 type WsPayload struct {
-	Action   string         `json:"action"`
-	UserName string         `json:"username"`
-	Message  string         `json:"message"`
-	Conn     websocket.Conn `json:"-"`
+	Action   string       `json:"action"`
+	UserName string       `json:"username"`
+	Message  string       `json:"message"`
+	Conn     WsConnection `json:"-"`
 }

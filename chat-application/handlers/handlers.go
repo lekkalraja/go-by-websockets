@@ -11,7 +11,7 @@ import (
 	"github.com/lekkalraja/go-by-websockets/chat-application/models"
 )
 
-var conns = make(map[*websocket.Conn]string)
+var conns = make(map[models.WsConnection]string)
 var payChan = make(chan *models.WsPayload)
 
 var views = jet.NewSet(
@@ -45,23 +45,24 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 		Message: `<em><small>Connected to server</small></em>`,
 	}
 	err = conn.WriteJSON(response)
-	conns[conn] = ""
+	wsConn := models.WsConnection{Conn: conn}
+	conns[wsConn] = ""
 	if err != nil {
 		log.Printf("Something went wrong while Wring Ws response : %v", err)
 	}
-	go listenWS(conn)
+	go listenWS(&wsConn)
 }
 
-func listenWS(conn *websocket.Conn) {
+func listenWS(conn *models.WsConnection) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("Something went wrong, Recovering for the error : %v", r)
-			delete(conns, conn)
+			delete(conns, *conn)
 		}
 	}()
 	var payload *models.WsPayload
 	for {
-		err := conn.ReadJSON(&payload)
+		err := conn.Conn.ReadJSON(&payload)
 		if err == nil {
 			payload.Conn = *conn
 			log.Printf("Payload : %v \n", payload.Action)
@@ -77,10 +78,10 @@ func ListenPayloadChannel() {
 		case "open":
 			brodcast(getWsResponse("list_users"))
 		case "username":
-			conns[&payload.Conn] = payload.UserName
+			conns[payload.Conn] = payload.UserName
 			brodcast(getWsResponse("list_users"))
 		case "left":
-			delete(conns, &payload.Conn)
+			delete(conns, payload.Conn)
 			brodcast(getWsResponse("list_users"))
 		case "message":
 			response := &models.WsResponse{
@@ -115,15 +116,12 @@ func getUsers() []string {
 
 func brodcast(response *models.WsResponse) {
 	log.Printf("Response : %v \n", response)
-	for conn, user := range conns {
-		if user != "" {
-			log.Printf("Sending Response : %v  to %s\n", response, user)
-			err := conn.WriteJSON(response)
-			if err != nil {
-				log.Printf("Something went wrong while sending message to : %v", conn.RemoteAddr())
-				conn.Close()
-				delete(conns, conn)
-			}
+	for conn := range conns {
+		err := conn.Conn.WriteJSON(response)
+		if err != nil {
+			log.Printf("Something went wrong while sending message to : %v", conn.Conn.RemoteAddr())
+			conn.Conn.Close()
+			delete(conns, conn)
 		}
 	}
 }
