@@ -5,9 +5,9 @@
 
 go build -o vigilate cmd/web/*.go && ./vigilate \
 -dbuser='postgres' \
--pusherHost='pusher.com' \
+-pusherHost='127.0.0.1' \
 -pusherKey='abc123' \
 -pusherSecret='123abc' \
--pusherApp="1"
--pusherPort="4001"
+-pusherApp="1" \
+-pusherPort="4001" \
 -pusherSecure=false

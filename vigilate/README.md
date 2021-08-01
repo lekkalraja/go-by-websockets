@@ -6,5 +6,12 @@
 * Then Execute `soda migrate` -> To Create Tables and populate data
 * `./run.sh` <- To Run the Vigilate application
 
+#### Start Pusher Service
+* For Configs look @ `./ipe/linux/config.json`
+    ```shellscript
+        > cd ./ipe/linux
+        > ./ipe
+    ```
+
 
 Source : https://github.com/tsawler/vigilate

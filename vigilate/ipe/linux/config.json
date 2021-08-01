@@ -1,0 +1,20 @@
+{
+	"Host": ":4001",
+	"SSL": false,
+	"SSLHost": ":4433",
+	"SSLKeyFile": "A key.pem file",
+	"SSLCertFile": "A cert.pem file",
+	"Apps": [
+		{
+			"ApplicationDisabled": false,
+			"Secret": "123abc",
+			"Key": "abc123",
+			"OnlySSL": false,
+			"Name": "Vigilate",
+			"AppID": "1",
+			"UserEvents": true,
+			"WebHooks": false,
+			"URLWebHook": "http://127.0.0.1:5000/hook"
+		}
+	]
+}
