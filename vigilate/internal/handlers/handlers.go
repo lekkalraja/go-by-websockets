@@ -128,11 +128,26 @@ func (repo *DBRepo) AllHosts(w http.ResponseWriter, r *http.Request) {
 
 // Host shows the host add/edit form
 func (repo *DBRepo) Host(w http.ResponseWriter, r *http.Request) {
-	var h models.Host
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		helpers.ServerError(w, r, err)
+		return
+	}
+
+	var host models.Host
+
+	if id > 0 {
+		host, err = repo.DB.GetHostById(r.Context(), id)
+
+		if err != nil {
+			helpers.ServerError(w, r, err)
+			return
+		}
+	}
 
 	vars := make(jet.VarMap)
-	vars.Set("host", h)
-	err := helpers.RenderPage(w, r, "host", vars, nil)
+	vars.Set("host", host)
+	err = helpers.RenderPage(w, r, "host", vars, nil)
 	if err != nil {
 		printTemplateError(w, err)
 	}
@@ -140,11 +155,30 @@ func (repo *DBRepo) Host(w http.ResponseWriter, r *http.Request) {
 
 // SaveHost Will save host data into db
 func (repo *DBRepo) SaveHost(w http.ResponseWriter, r *http.Request) {
-	/*err := helpers.RenderPage(w, r, "host", nil, nil)
+	_, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		printTemplateError(w, err)
-	}*/
-	w.Write([]byte("Hola, Added New Host!"))
+		helpers.ServerError(w, r, err)
+		return
+	}
+
+	var host models.Host
+
+	host.HostName = r.Form.Get("host_name")
+	host.CanonicalName = r.Form.Get("canonical_name")
+	host.URL = r.Form.Get("url")
+	host.IP = r.Form.Get("ip")
+	host.IPV6 = r.Form.Get("ipv6")
+	host.OS = r.Form.Get("os")
+	host.Active, _ = strconv.Atoi(r.Form.Get("active"))
+
+	host.ID, err = repo.DB.InsertHost(r.Context(), host)
+
+	if err != nil {
+		helpers.ServerError(w, r, err)
+		return
+	}
+	repo.App.Session.Put(r.Context(), "flash", "Changes saved")
+	http.Redirect(w, r, fmt.Sprintf("/admin/host/%d", host.ID), http.StatusSeeOther)
 }
 
 // AllUsers lists all admin users

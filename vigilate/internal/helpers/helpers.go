@@ -2,16 +2,17 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/CloudyKit/jet/v6"
-	"github.com/justinas/nosurf"
-	"github.com/lekkalraja/go-by-websockets/vigilate/internal/config"
-	"github.com/lekkalraja/go-by-websockets/vigilate/internal/models"
-	"github.com/lekkalraja/go-by-websockets/vigilate/internal/templates"
 	"log"
 	"math/rand"
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/CloudyKit/jet/v6"
+	"github.com/justinas/nosurf"
+	"github.com/lekkalraja/go-by-websockets/vigilate/internal/config"
+	"github.com/lekkalraja/go-by-websockets/vigilate/internal/models"
+	"github.com/lekkalraja/go-by-websockets/vigilate/internal/templates"
 )
 
 const (

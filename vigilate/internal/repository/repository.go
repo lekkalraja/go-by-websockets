@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/lekkalraja/go-by-websockets/vigilate/internal/models"
+import (
+	"context"
+
+	"github.com/lekkalraja/go-by-websockets/vigilate/internal/models"
+)
 
 // DatabaseRepo is the database repository
 type DatabaseRepo interface {
@@ -20,4 +24,8 @@ type DatabaseRepo interface {
 	InsertRememberMeToken(id int, token string) error
 	DeleteToken(token string) error
 	CheckForToken(id int, token string) bool
+
+	// HOST
+	InsertHost(pctx context.Context, host models.Host) (int, error)
+	GetHostById(pctx context.Context, id int) (models.Host, error)
 }
