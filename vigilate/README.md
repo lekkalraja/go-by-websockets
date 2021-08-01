@@ -18,7 +18,7 @@
         > ./ipe
     ```
 
-##### Create Database Table Creation Scripts (migrtion (fizz) scripts) using `soda`
+##### Create Database Table Creation Scripts (migrtion (Buffaloo fizz) scripts) using `soda`
 * To generate Scripts : `soda generate fizz CreateHostsTable`
     ```shellscript
         raja@raja-Latitude-3460:~/go-by-websockets/vigilate$ soda generate fizz CreateHostsTable

@@ -49,7 +49,8 @@ CREATE TABLE public.host_services (
     schedule_unit character varying(255) DEFAULT 'm'::character varying NOT NULL,
     last_check timestamp without time zone DEFAULT '0001-01-01 00:00:01'::timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    status character varying(255) DEFAULT 'pending'::character varying NOT NULL
 );
 
 
