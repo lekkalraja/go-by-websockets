@@ -2,6 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"runtime/debug"
+	"strconv"
+
 	"github.com/CloudyKit/jet/v6"
 	"github.com/go-chi/chi"
 	"github.com/lekkalraja/go-by-websockets/vigilate/internal/config"
@@ -10,10 +15,6 @@ import (
 	"github.com/lekkalraja/go-by-websockets/vigilate/internal/models"
 	"github.com/lekkalraja/go-by-websockets/vigilate/internal/repository"
 	"github.com/lekkalraja/go-by-websockets/vigilate/internal/repository/dbrepo"
-	"log"
-	"net/http"
-	"runtime/debug"
-	"strconv"
 )
 
 //Repo is the repository
@@ -131,6 +132,15 @@ func (repo *DBRepo) Host(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		printTemplateError(w, err)
 	}
+}
+
+// SaveHost Will save host data into db
+func (repo *DBRepo) SaveHost(w http.ResponseWriter, r *http.Request) {
+	/*err := helpers.RenderPage(w, r, "host", nil, nil)
+	if err != nil {
+		printTemplateError(w, err)
+	}*/
+	w.Write([]byte("Hola, Added New Host!"))
 }
 
 // AllUsers lists all admin users
