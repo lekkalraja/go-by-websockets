@@ -37,6 +37,90 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: host_services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.host_services (
+    id integer NOT NULL,
+    host_id integer NOT NULL,
+    service_id integer NOT NULL,
+    active integer DEFAULT 1 NOT NULL,
+    schedule_number integer DEFAULT 3 NOT NULL,
+    schedule_unit character varying(255) DEFAULT 'm'::character varying NOT NULL,
+    last_check timestamp without time zone DEFAULT '0001-01-01 00:00:01'::timestamp without time zone NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.host_services OWNER TO postgres;
+
+--
+-- Name: host_services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.host_services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.host_services_id_seq OWNER TO postgres;
+
+--
+-- Name: host_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.host_services_id_seq OWNED BY public.host_services.id;
+
+
+--
+-- Name: hosts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.hosts (
+    id integer NOT NULL,
+    host_name character varying(255) NOT NULL,
+    canonical_name character varying(255) NOT NULL,
+    url character varying(255) NOT NULL,
+    ip character varying(255) NOT NULL,
+    ipv6 character varying(255) NOT NULL,
+    location character varying(255) NOT NULL,
+    os character varying(255) NOT NULL,
+    active integer DEFAULT 1 NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.hosts OWNER TO postgres;
+
+--
+-- Name: hosts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.hosts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.hosts_id_seq OWNER TO postgres;
+
+--
+-- Name: hosts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.hosts_id_seq OWNED BY public.hosts.id;
+
+
+--
 -- Name: preferences; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -122,6 +206,44 @@ CREATE TABLE public.schema_migration (
 ALTER TABLE public.schema_migration OWNER TO postgres;
 
 --
+-- Name: services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.services (
+    id integer NOT NULL,
+    service_name character varying(255) NOT NULL,
+    active integer DEFAULT 1 NOT NULL,
+    icon character varying(255) NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.services OWNER TO postgres;
+
+--
+-- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.services_id_seq OWNER TO postgres;
+
+--
+-- Name: services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.services_id_seq OWNED BY public.services.id;
+
+
+--
 -- Name: sessions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -177,6 +299,20 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: host_services id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.host_services ALTER COLUMN id SET DEFAULT nextval('public.host_services_id_seq'::regclass);
+
+
+--
+-- Name: hosts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hosts ALTER COLUMN id SET DEFAULT nextval('public.hosts_id_seq'::regclass);
+
+
+--
 -- Name: preferences id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -191,10 +327,33 @@ ALTER TABLE ONLY public.remember_tokens ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- Name: services id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.services ALTER COLUMN id SET DEFAULT nextval('public.services_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: host_services host_services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.host_services
+    ADD CONSTRAINT host_services_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hosts hosts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hosts
+    ADD CONSTRAINT hosts_pkey PRIMARY KEY (id);
 
 
 --
@@ -211,6 +370,14 @@ ALTER TABLE ONLY public.preferences
 
 ALTER TABLE ONLY public.remember_tokens
     ADD CONSTRAINT remember_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: services services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.services
+    ADD CONSTRAINT services_pkey PRIMARY KEY (id);
 
 
 --
@@ -244,6 +411,20 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 
 
 --
+-- Name: host_services set_timestamp; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.host_services FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();
+
+
+--
+-- Name: hosts set_timestamp; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.hosts FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();
+
+
+--
 -- Name: preferences set_timestamp; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -258,10 +439,33 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.remember_tokens FOR EACH RO
 
 
 --
+-- Name: services set_timestamp; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.services FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();
+
+
+--
 -- Name: users set_timestamp; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();
+
+
+--
+-- Name: host_services host_services_hosts_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.host_services
+    ADD CONSTRAINT host_services_hosts_id_fk FOREIGN KEY (host_id) REFERENCES public.hosts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: host_services host_services_services_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.host_services
+    ADD CONSTRAINT host_services_services_id_fk FOREIGN KEY (service_id) REFERENCES public.services(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
