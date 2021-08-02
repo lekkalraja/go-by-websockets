@@ -30,7 +30,7 @@ Host
 <div class="row">
     <div class="col">
 
-        <form method="post" action="/admin/host/0" novalidate class="needs-validation" id="host-form">
+        <form method="post" action="/admin/host/{{host.ID}}" novalidate class="needs-validation" id="host-form">
             <input type="hidden" name="action" value="1" id="action">
             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
 
@@ -102,7 +102,7 @@ Host
                                 <input id="os" name="os" value="{{host.OS}}" type="text" class="form-control">
                             </div>
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="active" value="{{host.Active}}" name="active">
+                                <input class="form-check-input" type="checkbox" id="active" value="1" {{ if host.Active == 1}} checked {{ end }} name="active">
                                 <label class="form-check-label" for="active">Active</label>
                             </div>
                         </div>

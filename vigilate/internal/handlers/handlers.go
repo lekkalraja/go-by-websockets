@@ -120,7 +120,13 @@ func (repo *DBRepo) PostSettings(w http.ResponseWriter, r *http.Request) {
 
 // AllHosts displays list of all hosts
 func (repo *DBRepo) AllHosts(w http.ResponseWriter, r *http.Request) {
-	err := helpers.RenderPage(w, r, "hosts", nil, nil)
+	hosts, err := repo.DB.GetAllHosts(r.Context())
+	if err != nil {
+		helpers.ServerError(w, r, err)
+	}
+	vars := make(jet.VarMap)
+	vars.Set("hosts", hosts)
+	err = helpers.RenderPage(w, r, "hosts", vars, nil)
 	if err != nil {
 		printTemplateError(w, err)
 	}
@@ -155,23 +161,39 @@ func (repo *DBRepo) Host(w http.ResponseWriter, r *http.Request) {
 
 // SaveHost Will save host data into db
 func (repo *DBRepo) SaveHost(w http.ResponseWriter, r *http.Request) {
-	_, err := strconv.Atoi(chi.URLParam(r, "id"))
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		helpers.ServerError(w, r, err)
 		return
 	}
-
+	log.Printf("Got Id to Save Host : %d", id)
 	var host models.Host
+
+	if id > 0 {
+		host, err = repo.DB.GetHostById(r.Context(), id)
+		log.Printf("Host from DB : %v", host)
+		if err != nil {
+			helpers.ServerError(w, r, err)
+			return
+		}
+	}
 
 	host.HostName = r.Form.Get("host_name")
 	host.CanonicalName = r.Form.Get("canonical_name")
 	host.URL = r.Form.Get("url")
 	host.IP = r.Form.Get("ip")
 	host.IPV6 = r.Form.Get("ipv6")
+	host.Location = r.Form.Get("location")
 	host.OS = r.Form.Get("os")
+	log.Printf("Acting : %v", r.Form.Get("active"))
 	host.Active, _ = strconv.Atoi(r.Form.Get("active"))
 
-	host.ID, err = repo.DB.InsertHost(r.Context(), host)
+	log.Printf("Upserting HOST : %v", host)
+	if id > 0 {
+		err = repo.DB.UpdateHostById(r.Context(), host)
+	} else {
+		host.ID, err = repo.DB.InsertHost(r.Context(), host)
+	}
 
 	if err != nil {
 		helpers.ServerError(w, r, err)

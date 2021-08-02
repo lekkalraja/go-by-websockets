@@ -28,4 +28,6 @@ type DatabaseRepo interface {
 	// HOST
 	InsertHost(pctx context.Context, host models.Host) (int, error)
 	GetHostById(pctx context.Context, id int) (models.Host, error)
+	UpdateHostById(pctx context.Context, host models.Host) error
+	GetAllHosts(pctx context.Context) ([]models.Host, error)
 }
