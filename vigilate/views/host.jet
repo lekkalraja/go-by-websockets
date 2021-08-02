@@ -197,7 +197,6 @@ Host
         for (let i = 0; i < toggles.length; i++) {
             toggles[i].addEventListener("change", function(){
                 let active = this.checked ? "1" : "0";
-                console.log(active)
                 let formData = new FormData();
                 formData.append("host_id", this.getAttribute("data-host-id"));
                 formData.append("service_id", this.getAttribute("data-service"));
@@ -210,8 +209,11 @@ Host
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log("called ajax");
-                    console.log("OK is", data.ok);
+                    if (data.ok) {
+                        successAlert("Changes Saved");
+                    } else {
+                        errorAlert("Something went wrong while saving changes...");
+                    }
                 })
             })
         }

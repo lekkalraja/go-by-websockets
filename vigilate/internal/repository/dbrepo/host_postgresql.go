@@ -143,3 +143,15 @@ func (m *postgresDBRepo) GetAllHosts(pctx context.Context) ([]models.Host, error
 	}
 	return hosts, nil
 }
+
+func (repo *postgresDBRepo) UpdateHostServiceStatus(pctx context.Context, hostId, serviceId, active int) error {
+	ctx, cancel := context.WithTimeout(pctx, 3*time.Second)
+	defer cancel()
+
+	stmt := `UPDATE host_services
+			 SET  active = $1
+			 WHERE host_id = $2 and service_id = $3
+	`
+	_, err := repo.DB.ExecContext(ctx, stmt, active, hostId, serviceId)
+	return err
+}

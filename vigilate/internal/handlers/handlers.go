@@ -358,13 +358,18 @@ func (repo *DBRepo) TaggleHostServiceStatus(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	data := make(map[string]string)
+	data["ok"] = "true"
+
 	hostID, _ := strconv.Atoi(r.Form.Get("host_id"))
 	serviceId, _ := strconv.Atoi(r.Form.Get("service_id"))
 	active, _ := strconv.Atoi(r.Form.Get("active"))
-
 	log.Printf("HostId: %d, ServiceId : %d, Active : %d", hostID, serviceId, active)
-	data := make(map[string]string)
-	data["ok"] = "true"
+
+	err = repo.DB.UpdateHostServiceStatus(r.Context(), hostID, serviceId, active)
+	if err != nil {
+		data["ok"] = "false"
+	}
 	js, _ := json.Marshal(data)
 	w.Header().Add("content-type", "application/json")
 	w.Write(js)
