@@ -185,7 +185,6 @@ func (repo *DBRepo) SaveHost(w http.ResponseWriter, r *http.Request) {
 	host.IPV6 = r.Form.Get("ipv6")
 	host.Location = r.Form.Get("location")
 	host.OS = r.Form.Get("os")
-	log.Printf("Acting : %v", r.Form.Get("active"))
 	host.Active, _ = strconv.Atoi(r.Form.Get("active"))
 
 	log.Printf("Upserting HOST : %v", host)
@@ -200,7 +199,12 @@ func (repo *DBRepo) SaveHost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	repo.App.Session.Put(r.Context(), "flash", "Changes saved")
-	http.Redirect(w, r, fmt.Sprintf("/admin/host/%d", host.ID), http.StatusSeeOther)
+	action, _ := strconv.Atoi(r.Form.Get("action"))
+	if action == 1 {
+		http.Redirect(w, r, "/admin/host/all", http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, fmt.Sprintf("/admin/host/%d", host.ID), http.StatusSeeOther)
+	}
 }
 
 // AllUsers lists all admin users

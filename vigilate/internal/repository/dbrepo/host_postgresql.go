@@ -97,12 +97,13 @@ func (m *postgresDBRepo) GetAllHosts(pctx context.Context) ([]models.Host, error
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var hosts []models.Host
 
 	for rows.Next() {
 		var host models.Host
-		_ = rows.Scan(
+		err = rows.Scan(
 			&host.ID,
 			&host.HostName,
 			&host.CanonicalName,
@@ -115,7 +116,14 @@ func (m *postgresDBRepo) GetAllHosts(pctx context.Context) ([]models.Host, error
 			&host.CreatedAt,
 			&host.UpdatedAt,
 		)
+		if err != nil {
+			return nil, err
+		}
 		hosts = append(hosts, host)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
 	}
 	return hosts, nil
 }
