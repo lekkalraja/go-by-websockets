@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -348,4 +349,23 @@ func show500(w http.ResponseWriter, r *http.Request) {
 
 func printTemplateError(w http.ResponseWriter, err error) {
 	_, _ = fmt.Fprint(w, fmt.Sprintf(`<small><span class='text-danger'>Error executing template: %s</span></small>`, err))
+}
+
+func (repo *DBRepo) TaggleHostServiceStatus(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		helpers.ServerError(w, r, err)
+		return
+	}
+
+	hostID, _ := strconv.Atoi(r.Form.Get("host_id"))
+	serviceId, _ := strconv.Atoi(r.Form.Get("service_id"))
+	active, _ := strconv.Atoi(r.Form.Get("active"))
+
+	log.Printf("HostId: %d, ServiceId : %d, Active : %d", hostID, serviceId, active)
+	data := make(map[string]string)
+	data["ok"] = "true"
+	js, _ := json.Marshal(data)
+	w.Header().Add("content-type", "application/json")
+	w.Write(js)
 }

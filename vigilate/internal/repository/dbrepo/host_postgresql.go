@@ -28,6 +28,22 @@ func (repo *postgresDBRepo) InsertHost(pctx context.Context, host models.Host) (
 		time.Now(),
 		time.Now(),
 	).Scan(&id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	// add host services and set to inactive
+	stmt := `
+		insert into host_services (host_id, service_id, active, schedule_number, schedule_unit,
+		status, created_at, updated_at) values ($1, 1, 0, 3, 'm', 'pending', $2, $3)
+`
+
+	_, err = repo.DB.ExecContext(ctx, stmt, id, time.Now(), time.Now())
+	if err != nil {
+		return id, err
+	}
+
 	return id, err
 }
 

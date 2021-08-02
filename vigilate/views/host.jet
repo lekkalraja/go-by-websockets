@@ -129,7 +129,34 @@ Host
                 {{ if host.ID > 0 }}
                     <div class="tab-pane fade" role="tabpanel" aria-labelledby="services-tab"
                         id="services-content">
-                        services content
+                        <div class="row">
+                            <div class="col">
+                                <h3 class="mt-3">Services</h3>
+                                <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>HTTP</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" value="1" type="checkbox" 
+                                                    id="http_service"
+                                                    data-service="1"
+                                                    data-host-id="{{host.ID}}"
+                                                    name="http">
+                                            <label class="form-check-label" for="active">Active</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="tab-pane fade" role="tabpanel" aria-labelledby="healthy-tab"
@@ -163,6 +190,33 @@ Host
 
 {{ block js() }}
 <script>
+
+    document.addEventListener("DOMContentLoaded", function(){
+        let toggles = document.querySelectorAll("[data-service]");
+
+        for (let i = 0; i < toggles.length; i++) {
+            toggles[i].addEventListener("change", function(){
+                let active = this.checked ? "1" : "0";
+                console.log(active)
+                let formData = new FormData();
+                formData.append("host_id", this.getAttribute("data-host-id"));
+                formData.append("service_id", this.getAttribute("data-service"));
+                formData.append("active", active);
+                formData.append("csrf_token", "{{.CSRFToken}}");
+
+                fetch("/admin/host/ajax/toggle-service", {
+                    method: "POST",
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("called ajax");
+                    console.log("OK is", data.ok);
+                })
+            })
+        }
+    })
+
     function val() {
         document.getElementById("action").value = 0;
         let form = document.getElementById("host-form");
