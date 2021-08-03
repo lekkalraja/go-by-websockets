@@ -74,6 +74,10 @@ func (m *postgresDBRepo) GetHostById(pctx context.Context, id int) (models.Host,
 		&host.UpdatedAt,
 	)
 
+	if err != nil {
+		return host, err
+	}
+
 	hostServicesQuery := `SELECT
 		hs.id, hs.host_id, hs.service_id, hs.active, hs.schedule_number, hs.schedule_unit,
 		hs.last_check, hs.status, hs.created_at, hs.updated_at,
@@ -181,7 +185,9 @@ func (m *postgresDBRepo) GetAllHosts(pctx context.Context) ([]models.Host, error
 		if err != nil {
 			return nil, err
 		}
-		hosts = append(hosts, host)
+
+		hst, _ := m.GetHostById(pctx, host.ID)
+		hosts = append(hosts, hst)
 	}
 
 	if rows.Err() != nil {

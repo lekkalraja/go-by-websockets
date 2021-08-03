@@ -50,6 +50,8 @@ func (repo *DBRepo) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 	vars.Set("no_pending", 0)
 	vars.Set("no_warning", 0)
 
+	hosts, _ := repo.DB.GetAllHosts(r.Context())
+	vars.Set("hosts", hosts)
 	err := helpers.RenderPage(w, r, "dashboard", vars, nil)
 	if err != nil {
 		printTemplateError(w, err)
