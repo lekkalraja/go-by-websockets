@@ -35,9 +35,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td colspan="5">No services</td>
-                </tr>
+                    {{ range services}}
+                        <td><a href="/admin/host/{{.HostID}}#warning-content">{{ .HostName }}</a></td>
+                        <td>{{ .Service.ServiceName }}</td>
+                        <td colspan="2">{{ .Active }}</td>
+                    {{ end }}
                 </tbody>
             </table>
         </div>

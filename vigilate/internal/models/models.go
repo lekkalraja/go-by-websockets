@@ -75,8 +75,17 @@ type HostService struct {
 	ScheduleNumber int
 	ScheduleUnit   string
 	Status         string
+	HostName       string
 	LastCheck      time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	Service        Services
+}
+
+// StatusCount Holds Count's of all active services by status
+type StatusCount struct {
+	Healthy int
+	Pending int
+	Warning int
+	Problem int
 }

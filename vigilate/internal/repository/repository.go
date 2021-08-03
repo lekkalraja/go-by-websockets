@@ -31,4 +31,6 @@ type DatabaseRepo interface {
 	UpdateHostById(pctx context.Context, host models.Host) error
 	GetAllHosts(pctx context.Context) ([]models.Host, error)
 	UpdateHostServiceStatus(pctx context.Context, hostId, serviceId, active int) error
+	GetAllActiveServicesCountByStatus(pctx context.Context) (models.StatusCount, error)
+	GetServicesByStatus(pctx context.Context, status string) ([]models.HostService, error)
 }
